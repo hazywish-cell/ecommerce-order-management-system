@@ -1,0 +1,77 @@
+USE college;
+
+-- Create Seller table
+CREATE TABLE seller (
+    seller_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    email VARCHAR(100)
+);
+
+-- Create Inventory table
+CREATE TABLE inventory (
+    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_id INT,
+    product_id INT,
+    stock_quantity INT DEFAULT 0,
+    status VARCHAR(20),
+
+    FOREIGN KEY (seller_id)
+        REFERENCES seller(seller_id),
+
+    FOREIGN KEY (product_id)
+        REFERENCES product(product_id)
+);
+
+-- Insert sellers
+INSERT INTO seller (seller_name, phone, email)
+VALUES
+('ABC Traders', '9876543210', 'abc@gmail.com'),
+('XYZ Suppliers', '9876543211', 'xyz@gmail.com'),
+('Green Mart', '9876543212', 'greenmart@gmail.com'),
+('Fresh Products', '9876543213', 'freshproducts@gmail.com'),
+('Smart Distributors', '9876543214', 'smartdist@gmail.com'),
+('Global Traders', '9876543215', 'globaltraders@gmail.com'),
+('City Suppliers', '9876543216', 'citysuppliers@gmail.com'),
+('Prime Sellers', '9876543217', 'primesellers@gmail.com'),
+('Best Choice Traders', '9876543218', 'bestchoice@gmail.com'),
+('Metro Distributors', '9876543219', 'metro@gmail.com');
+
+-- Insert inventory
+INSERT INTO inventory
+(seller_id, product_id, stock_quantity, status)
+VALUES
+(1, 1, 50, 'Available'),
+(2, 2, 25, 'Available'),
+(3, 3, 0, 'Unavailable'),
+(4, 4, 100, 'Available'),
+(5, 5, 15, 'Available'),
+(6, 6, 0, 'Unavailable'),
+(7, 7, 75, 'Available'),
+(8, 1, 30, 'Available'),
+(9, 2, 0, 'Unavailable'),
+(10, 3, 40, 'Available'),
+(1, 4, 20, 'Available'),
+(2, 5, 10, 'Available'),
+(3, 6, 0, 'Unavailable'),
+(4, 7, 60, 'Available'),
+(5, 1, 35, 'Available'),
+(6, 2, 50, 'Available'),
+(7, 3, 5, 'Available'),
+(8, 4, 0, 'Unavailable'),
+(9, 5, 25, 'Available'),
+(10, 7, 45, 'Available');
+
+-- Inventory Status Report
+SELECT
+    i.inventory_id,
+    s.seller_name,
+    p.product_name,
+    i.stock_quantity,
+    i.status
+FROM inventory i
+JOIN seller s
+    ON i.seller_id = s.seller_id
+JOIN product p
+    ON i.product_id = p.product_id
+ORDER BY i.inventory_id;
