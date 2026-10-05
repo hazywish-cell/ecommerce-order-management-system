@@ -1,0 +1,81 @@
+CREATE DATABASE tira_ecommerce;
+
+USE tira_ecommerce;
+
+CREATE TABLE Payment (
+    payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    customer_id INT NOT NULL,
+    payment_mode VARCHAR(30) NOT NULL,
+    payment_date DATE NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_status VARCHAR(20) NOT NULL
+);
+
+INSERT INTO Payment
+(order_id, customer_id, payment_mode, payment_date, amount, payment_status)
+VALUES
+(1, 101, 'UPI', '2026-10-01', 1500.00, 'Success'),
+(2, 102, 'Credit Card', '2026-10-02', 2500.00, 'Success'),
+(3, 103, 'Debit Card', '2026-10-02', 1200.00, 'Failed'),
+(4, 104, 'Cash on Delivery', '2026-10-03', 800.00, 'Success'),
+(5, 105, 'UPI', '2026-10-03', 3200.00, 'Success'),
+(6, 106, 'Net Banking', '2026-10-04', 1800.00, 'Failed'),
+(7, 107, 'Credit Card', '2026-10-04', 4500.00, 'Success'),
+(8, 108, 'UPI', '2026-10-05', 950.00, 'Success');
+
+-- Display all payments
+SELECT * FROM Payment;
+
+-- Successful transactions
+SELECT *
+FROM Payment
+WHERE payment_status = 'Success';
+
+-- Failed transactions
+SELECT *
+FROM Payment
+WHERE payment_status = 'Failed';
+
+-- Count transactions by payment method
+SELECT payment_mode, COUNT(*) AS total_transactions
+FROM Payment
+GROUP BY payment_mode;
+
+-- Total successful amount
+SELECT SUM(amount) AS total_successful_amount
+FROM Payment
+WHERE payment_status = 'Success';
+
+-- Payment status report
+SELECT
+    payment_status,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_amount
+FROM Payment
+GROUP BY payment_status;
+
+-- Payment method report
+SELECT
+    payment_mode,
+    COUNT(*) AS total_transactions,
+    SUM(amount) AS total_amount
+FROM Payment
+WHERE payment_status = 'Success'
+GROUP BY payment_mode
+ORDER BY total_transactions DESC;
+
+-- Daily payment report
+SELECT
+    payment_date,
+    COUNT(*) AS total_transactions,
+    SUM(amount) AS total_amount
+FROM Payment
+GROUP BY payment_date
+ORDER BY payment_date;
+
+-- Highest payment
+SELECT *
+FROM Payment
+ORDER BY amount DESC
+LIMIT 1;
