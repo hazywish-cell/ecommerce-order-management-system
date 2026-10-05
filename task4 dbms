@@ -1,0 +1,381 @@
+-- ============================================================
+-- TIRA E-COMMERCE ORDER MANAGEMENT SYSTEM
+-- TASK 4
+-- ============================================================
+
+-- Create Database
+CREATE DATABASE IF NOT EXISTS tira_ecommerce;
+USE tira_ecommerce;
+
+
+-- ============================================================
+-- 1. CUSTOMER TABLE
+-- ============================================================
+
+CREATE TABLE Customer (
+    Customer_ID INT PRIMARY KEY,
+    Customer_Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100),
+    Phone VARCHAR(15)
+);
+
+
+-- ============================================================
+-- 2. PRODUCT TABLE
+-- ============================================================
+
+CREATE TABLE Product (
+    Product_ID INT PRIMARY KEY,
+    Product_Name VARCHAR(100) NOT NULL,
+    Category VARCHAR(50),
+    Price DECIMAL(10,2) NOT NULL
+);
+
+
+-- ============================================================
+-- 3. ORDERS TABLE
+-- ============================================================
+
+CREATE TABLE Orders (
+    Order_ID INT PRIMARY KEY,
+    Customer_ID INT NOT NULL,
+    Order_Date DATE NOT NULL,
+    Order_Status VARCHAR(30),
+
+    FOREIGN KEY (Customer_ID)
+        REFERENCES Customer(Customer_ID)
+);
+
+
+-- ============================================================
+-- 4. ORDER_DETAILS TABLE
+-- ============================================================
+
+CREATE TABLE Order_Details (
+    Order_Detail_ID INT PRIMARY KEY,
+    Order_ID INT NOT NULL,
+    Product_ID INT NOT NULL,
+    Quantity INT NOT NULL,
+    Unit_Price DECIMAL(10,2) NOT NULL,
+
+    FOREIGN KEY (Order_ID)
+        REFERENCES Orders(Order_ID),
+
+    FOREIGN KEY (Product_ID)
+        REFERENCES Product(Product_ID)
+);
+
+
+-- ============================================================
+-- 5. INSERT CUSTOMER DATA
+-- ============================================================
+
+INSERT INTO Customer
+(Customer_ID, Customer_Name, Email, Phone)
+VALUES
+(1, 'Priya', 'priya@gmail.com', '9876543210'),
+(2, 'Arun', 'arun@gmail.com', '9876543211'),
+(3, 'Anu', 'anu@gmail.com', '9876543212'),
+(4, 'Ravi', 'ravi@gmail.com', '9876543213');
+
+
+-- ============================================================
+-- 6. INSERT PRODUCT DATA
+-- ============================================================
+
+INSERT INTO Product
+(Product_ID, Product_Name, Category, Price)
+VALUES
+(101, 'Face Wash', 'Skincare', 450.00),
+(102, 'Lipstick', 'Makeup', 799.00),
+(103, 'Moisturizer', 'Skincare', 650.00),
+(104, 'Perfume', 'Fragrance', 1200.00),
+(105, 'Headphones', 'Electronics', 2500.00);
+
+
+-- ============================================================
+-- 7. INSERT ORDER DATA
+-- ============================================================
+
+INSERT INTO Orders
+(Order_ID, Customer_ID, Order_Date, Order_Status)
+VALUES
+(1, 1, '2026-10-01', 'Delivered'),
+(2, 2, '2026-10-02', 'Shipped'),
+(3, 3, '2026-10-03', 'Processing'),
+(4, 1, '2026-10-04', 'Delivered');
+
+
+-- ============================================================
+-- 8. INSERT ORDER DETAILS
+-- ============================================================
+
+INSERT INTO Order_Details
+(Order_Detail_ID, Order_ID, Product_ID, Quantity, Unit_Price)
+VALUES
+(1, 1, 101, 2, 450.00),
+(2, 1, 102, 1, 799.00),
+(3, 2, 105, 1, 2500.00),
+(4, 3, 103, 2, 650.00),
+(5, 4, 104, 1, 1200.00);
+
+
+-- ============================================================
+-- 9. DISPLAY ALL CUSTOMERS
+-- ============================================================
+
+SELECT *
+FROM Customer;
+
+
+-- ============================================================
+-- 10. DISPLAY ALL PRODUCTS
+-- ============================================================
+
+SELECT *
+FROM Product;
+
+
+-- ============================================================
+-- 11. DISPLAY ALL ORDERS
+-- ============================================================
+
+SELECT *
+FROM Orders;
+
+
+-- ============================================================
+-- 12. DISPLAY ALL ORDER DETAILS
+-- ============================================================
+
+SELECT *
+FROM Order_Details;
+
+
+-- ============================================================
+-- 13. CUSTOMER ORDER HISTORY
+-- ============================================================
+
+SELECT
+    c.Customer_Name,
+    o.Order_ID,
+    o.Order_Date,
+    p.Product_Name,
+    od.Quantity,
+    od.Unit_Price,
+    (od.Quantity * od.Unit_Price) AS Subtotal
+FROM Customer c
+JOIN Orders o
+    ON c.Customer_ID = o.Customer_ID
+JOIN Order_Details od
+    ON o.Order_ID = od.Order_ID
+JOIN Product p
+    ON od.Product_ID = p.Product_ID;
+
+
+-- ============================================================
+-- 14. FIND TOTAL AMOUNT FOR EACH ORDER
+-- ============================================================
+
+SELECT
+    o.Order_ID,
+    c.Customer_Name,
+    SUM(od.Quantity * od.Unit_Price) AS Total_Amount
+FROM Orders o
+JOIN Customer c
+    ON o.Customer_ID = c.Customer_ID
+JOIN Order_Details od
+    ON o.Order_ID = od.Order_ID
+GROUP BY
+    o.Order_ID,
+    c.Customer_Name;
+
+
+-- ============================================================
+-- 15. FIND TOTAL SPENDING OF EACH CUSTOMER
+-- ============================================================
+
+SELECT
+    c.Customer_Name,
+    SUM(od.Quantity * od.Unit_Price) AS Total_Spending
+FROM Customer c
+JOIN Orders o
+    ON c.Customer_ID = o.Customer_ID
+JOIN Order_Details od
+    ON o.Order_ID = od.Order_ID
+GROUP BY c.Customer_ID, c.Customer_Name;
+
+
+-- ============================================================
+-- 16. FIND MAXIMUM ORDER AMOUNT
+-- ============================================================
+
+SELECT
+    MAX(Total_Amount) AS Maximum_Order_Amount
+FROM
+(
+    SELECT
+        o.Order_ID,
+        SUM(od.Quantity * od.Unit_Price) AS Total_Amount
+    FROM Orders o
+    JOIN Order_Details od
+        ON o.Order_ID = od.Order_ID
+    GROUP BY o.Order_ID
+) AS Order_Total;
+
+
+-- ============================================================
+-- 17. FIND SECOND MAXIMUM ORDER AMOUNT
+-- ============================================================
+
+SELECT
+    MAX(Total_Amount) AS Second_Maximum_Order
+FROM
+(
+    SELECT
+        o.Order_ID,
+        SUM(od.Quantity * od.Unit_Price) AS Total_Amount
+    FROM Orders o
+    JOIN Order_Details od
+        ON o.Order_ID = od.Order_ID
+    GROUP BY o.Order_ID
+) AS Order_Total
+WHERE Total_Amount <
+(
+    SELECT MAX(Total_Amount)
+    FROM
+    (
+        SELECT
+            o2.Order_ID,
+            SUM(od2.Quantity * od2.Unit_Price) AS Total_Amount
+        FROM Orders o2
+        JOIN Order_Details od2
+            ON o2.Order_ID = od2.Order_ID
+        GROUP BY o2.Order_ID
+    ) AS Maximum_Order
+);
+
+
+-- ============================================================
+-- 18. UPDATE ORDER STATUS
+-- ============================================================
+
+UPDATE Orders
+SET Order_Status = 'Delivered'
+WHERE Order_ID = 2;
+
+
+-- ============================================================
+-- 19. DISPLAY UPDATED ORDER
+-- ============================================================
+
+SELECT *
+FROM Orders
+WHERE Order_ID = 2;
+
+
+-- ============================================================
+-- 20. FIND ORDERS WITH TOTAL AMOUNT GREATER THAN 1000
+-- ============================================================
+
+SELECT
+    o.Order_ID,
+    c.Customer_Name,
+    SUM(od.Quantity * od.Unit_Price) AS Total_Amount
+FROM Orders o
+JOIN Customer c
+    ON o.Customer_ID = c.Customer_ID
+JOIN Order_Details od
+    ON o.Order_ID = od.Order_ID
+GROUP BY
+    o.Order_ID,
+    c.Customer_Name
+HAVING SUM(od.Quantity * od.Unit_Price) > 1000;
+
+
+-- ============================================================
+-- 21. FIND HIGHEST-PRICED PRODUCT
+-- ============================================================
+
+SELECT
+    Product_Name,
+    Price
+FROM Product
+WHERE Price =
+(
+    SELECT MAX(Price)
+    FROM Product
+);
+
+
+-- ============================================================
+-- 22. FIND SECOND HIGHEST PRODUCT PRICE
+-- ============================================================
+
+SELECT
+    Product_Name,
+    Price
+FROM Product
+WHERE Price =
+(
+    SELECT MAX(Price)
+    FROM Product
+    WHERE Price <
+    (
+        SELECT MAX(Price)
+        FROM Product
+    )
+);
+
+
+-- ============================================================
+-- 23. COUNT ORDERS FOR EACH CUSTOMER
+-- ============================================================
+
+SELECT
+    c.Customer_Name,
+    COUNT(o.Order_ID) AS Number_Of_Orders
+FROM Customer c
+LEFT JOIN Orders o
+    ON c.Customer_ID = o.Customer_ID
+GROUP BY
+    c.Customer_ID,
+    c.Customer_Name;
+
+
+-- ============================================================
+-- 24. FIND TOTAL QUANTITY SOLD FOR EACH PRODUCT
+-- ============================================================
+
+SELECT
+    p.Product_Name,
+    SUM(od.Quantity) AS Total_Quantity_Sold
+FROM Product p
+JOIN Order_Details od
+    ON p.Product_ID = od.Product_ID
+GROUP BY
+    p.Product_ID,
+    p.Product_Name;
+
+
+-- ============================================================
+-- 25. FINAL ORDER REPORT
+-- ============================================================
+
+SELECT
+    c.Customer_Name,
+    o.Order_ID,
+    o.Order_Date,
+    o.Order_Status,
+    p.Product_Name,
+    od.Quantity,
+    od.Unit_Price,
+    (od.Quantity * od.Unit_Price) AS Subtotal
+FROM Customer c
+JOIN Orders o
+    ON c.Customer_ID = o.Customer_ID
+JOIN Order_Details od
+    ON o.Order_ID = od.Order_ID
+JOIN Product p
+    ON od.Product_ID = p.Product_ID
+ORDER BY o.Order_ID;
