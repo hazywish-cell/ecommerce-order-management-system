@@ -1,0 +1,302 @@
+-- =========================================================
+-- PRODUCT REVIEW AND RATING MANAGEMENT SYSTEM
+-- =========================================================
+
+-- 1. CREATE DATABASE
+-- =========================================================
+
+CREATE DATABASE ProductReviewDB;
+
+USE ProductReviewDB;
+
+
+-- 2. CREATE PRODUCT TABLE
+-- =========================================================
+
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100),
+    price DECIMAL(10,2)
+);
+
+
+-- INSERT PRODUCTS
+-- =========================================================
+
+INSERT INTO Product VALUES
+(1, 'Laptop', 55000.00),
+(2, 'Headphones', 2500.00),
+(3, 'Smartphone', 30000.00),
+(4, 'Keyboard', 1500.00),
+(5, 'Mouse', 800.00);
+
+
+-- DISPLAY PRODUCTS
+-- =========================================================
+
+SELECT * FROM Product;
+
+
+-- 3. CREATE CUSTOMER TABLE
+-- =========================================================
+
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    email VARCHAR(100)
+);
+
+
+-- INSERT CUSTOMERS
+-- =========================================================
+
+INSERT INTO Customer VALUES
+(101, 'Arun', 'arun@gmail.com'),
+(102, 'Priya', 'priya@gmail.com'),
+(103, 'Rahul', 'rahul@gmail.com'),
+(104, 'Divya', 'divya@gmail.com'),
+(105, 'Karthik', 'karthik@gmail.com');
+
+
+-- DISPLAY CUSTOMERS
+-- =========================================================
+
+SELECT * FROM Customer;
+
+
+-- 4. CREATE REVIEW TABLE
+-- =========================================================
+
+CREATE TABLE Review (
+    review_id INT PRIMARY KEY,
+    product_id INT,
+    customer_id INT,
+    review_text VARCHAR(500),
+    review_date DATE,
+    FOREIGN KEY (product_id) REFERENCES Product(product_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+);
+
+
+-- INSERT CUSTOMER REVIEWS
+-- =========================================================
+
+INSERT INTO Review VALUES
+(1, 1, 101, 'Excellent laptop with good performance', '2026-10-01'),
+(2, 2, 102, 'Very good sound quality', '2026-10-02'),
+(3, 3, 103, 'Good smartphone with a nice camera', '2026-10-02'),
+(4, 4, 104, 'Keyboard is comfortable to use', '2026-10-03'),
+(5, 5, 105, 'Average mouse but good for the price', '2026-10-03'),
+(6, 1, 102, 'Fast laptop and excellent display', '2026-10-04'),
+(7, 2, 103, 'Good headphones for daily use', '2026-10-04');
+
+
+-- DISPLAY REVIEWS
+-- =========================================================
+
+SELECT * FROM Review;
+
+
+-- 5. CREATE RATING TABLE
+-- =========================================================
+
+CREATE TABLE Rating (
+    rating_id INT PRIMARY KEY,
+    review_id INT,
+    rating INT,
+    FOREIGN KEY (review_id) REFERENCES Review(review_id)
+);
+
+
+-- INSERT RATINGS
+-- =========================================================
+
+INSERT INTO Rating VALUES
+(1, 1, 5),
+(2, 2, 5),
+(3, 3, 4),
+(4, 4, 4),
+(5, 5, 3),
+(6, 6, 5),
+(7, 7, 4);
+
+
+-- DISPLAY RATINGS
+-- =========================================================
+
+SELECT * FROM Rating;
+
+
+-- =========================================================
+-- TASK 1: CREATE REVIEW AND RATING TABLES
+-- =========================================================
+
+SELECT * FROM Review;
+
+SELECT * FROM Rating;
+
+
+-- =========================================================
+-- TASK 2: STORE CUSTOMER FEEDBACK AND RATINGS
+-- =========================================================
+
+SELECT
+    Review.review_id,
+    Customer.customer_name,
+    Product.product_name,
+    Review.review_text,
+    Rating.rating,
+    Review.review_date
+FROM Review
+JOIN Customer
+ON Review.customer_id = Customer.customer_id
+JOIN Product
+ON Review.product_id = Product.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id;
+
+
+-- =========================================================
+-- TASK 3: RETRIEVE PRODUCT REVIEW DETAILS
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    Customer.customer_name,
+    Review.review_text,
+    Rating.rating,
+    Review.review_date
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Customer
+ON Review.customer_id = Customer.customer_id
+JOIN Rating
+ON Review.review_id = Rating.review_id;
+
+
+-- =========================================================
+-- TASK 4: CALCULATE AVERAGE PRODUCT RATINGS
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    AVG(Rating.rating) AS average_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name;
+
+
+-- =========================================================
+-- COUNT TOTAL REVIEWS FOR EACH PRODUCT
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    COUNT(Rating.rating) AS total_reviews
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name;
+
+
+-- =========================================================
+-- FIND HIGHEST RATING GIVEN TO EACH PRODUCT
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    MAX(Rating.rating) AS highest_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name;
+
+
+-- =========================================================
+-- FIND LOWEST RATING GIVEN TO EACH PRODUCT
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    MIN(Rating.rating) AS lowest_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name;
+
+
+-- =========================================================
+-- TASK 5: IDENTIFY HIGHLY RATED PRODUCTS
+-- Products with average rating >= 4.5
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    AVG(Rating.rating) AS average_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name
+HAVING AVG(Rating.rating) >= 4.5;
+
+
+-- =========================================================
+-- FIND THE HIGHEST-RATED PRODUCT
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    AVG(Rating.rating) AS average_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name
+ORDER BY average_rating DESC
+LIMIT 1;
+
+
+-- =========================================================
+-- DISPLAY PRODUCTS FROM HIGHEST TO LOWEST RATING
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    AVG(Rating.rating) AS average_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name
+ORDER BY average_rating DESC;
+
+
+-- =========================================================
+-- DISPLAY PRODUCTS WITH THEIR REVIEW COUNT AND RATING
+-- =========================================================
+
+SELECT
+    Product.product_name,
+    COUNT(Rating.rating) AS total_reviews,
+    AVG(Rating.rating) AS average_rating
+FROM Product
+JOIN Review
+ON Product.product_id = Review.product_id
+JOIN Rating
+ON Review.review_id = Rating.review_id
+GROUP BY Product.product_id, Product.product_name
+ORDER BY average_rating DESC;
