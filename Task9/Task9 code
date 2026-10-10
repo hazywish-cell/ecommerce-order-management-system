@@ -1,0 +1,380 @@
+# Task IX: Sales and Customer Analytics System
+
+## 1. Aim
+
+To develop a Sales and Customer Analytics System using MySQL to analyze sales performance, identify top customers, determine best-selling products, and generate category-wise sales reports using aggregate functions.
+
+## 2. Objectives
+
+1. Apply `COUNT()`, `SUM()`, `AVG()`, `MIN()`, and `MAX()`.
+2. Generate total sales reports.
+3. Find top customers based on purchase amount.
+4. Identify best-selling products.
+5. Perform category-wise sales analysis.
+
+## 3. Technologies Used
+
+* Database: MySQL
+* Language: SQL
+* Application: E-Commerce Sales Analytics
+
+## 4. Database Creation
+
+```sql
+CREATE DATABASE SalesAnalyticsDB;
+
+USE SalesAnalyticsDB;
+```
+
+## 5. Create Tables
+
+### Customer Table
+
+```sql
+CREATE TABLE Customer (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(100),
+    City VARCHAR(50),
+    Email VARCHAR(100)
+);
+```
+
+### Product Table
+
+```sql
+CREATE TABLE Product (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(100),
+    Category VARCHAR(50),
+    Price DECIMAL(10,2)
+);
+```
+
+### Sales Table
+
+```sql
+CREATE TABLE Sales (
+    SaleID INT PRIMARY KEY,
+    CustomerID INT,
+    ProductID INT,
+    Quantity INT,
+    SaleDate DATE,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+```
+
+## 6. Insert Sample Data
+
+### Insert Customers
+
+```sql
+INSERT INTO Customer VALUES
+(1, 'Arun', 'Chennai', 'arun@gmail.com'),
+(2, 'Priya', 'Coimbatore', 'priya@gmail.com'),
+(3, 'Rahul', 'Madurai', 'rahul@gmail.com'),
+(4, 'Divya', 'Chennai', 'divya@gmail.com'),
+(5, 'Karthik', 'Salem', 'karthik@gmail.com');
+```
+
+### Insert Products
+
+```sql
+INSERT INTO Product VALUES
+(101, 'Laptop', 'Electronics', 50000.00),
+(102, 'Mobile', 'Electronics', 20000.00),
+(103, 'Headphones', 'Accessories', 2000.00),
+(104, 'Keyboard', 'Accessories', 1500.00),
+(105, 'Office Chair', 'Furniture', 8000.00);
+```
+
+### Insert Sales
+
+```sql
+INSERT INTO Sales VALUES
+(1, 1, 101, 1, '2026-01-10'),
+(2, 2, 102, 2, '2026-01-12'),
+(3, 3, 103, 3, '2026-01-15'),
+(4, 1, 104, 2, '2026-01-18'),
+(5, 4, 101, 1, '2026-01-20'),
+(6, 5, 105, 2, '2026-01-22'),
+(7, 2, 103, 2, '2026-01-25'),
+(8, 3, 102, 1, '2026-02-01'),
+(9, 4, 104, 3, '2026-02-05'),
+(10, 1, 105, 1, '2026-02-10'),
+(11, 5, 101, 2, '2026-02-15'),
+(12, 2, 104, 1, '2026-02-20');
+```
+
+## 7. Apply Aggregate Functions
+
+### 7.1 COUNT() – Count Total Sales Transactions
+
+```sql
+SELECT COUNT(*) AS TotalTransactions
+FROM Sales;
+```
+
+**Purpose:** Counts the total number of sales transactions.
+
+### 7.2 SUM() – Calculate Total Quantity Sold
+
+```sql
+SELECT SUM(Quantity) AS TotalQuantitySold
+FROM Sales;
+```
+
+**Purpose:** Calculates the total number of product units sold.
+
+### 7.3 AVG() – Calculate Average Product Price
+
+```sql
+SELECT AVG(Price) AS AverageProductPrice
+FROM Product;
+```
+
+**Purpose:** Calculates the average price of all products.
+
+### 7.4 MIN() – Find the Lowest Product Price
+
+```sql
+SELECT MIN(Price) AS LowestProductPrice
+FROM Product;
+```
+
+**Purpose:** Identifies the least expensive product price.
+
+### 7.5 MAX() – Find the Highest Product Price
+
+```sql
+SELECT MAX(Price) AS HighestProductPrice
+FROM Product;
+```
+
+**Purpose:** Identifies the most expensive product price.
+
+## 8. Generate Total Sales Reports
+
+### 8.1 Calculate Total Sales Revenue
+
+```sql
+SELECT SUM(P.Price * S.Quantity) AS TotalSalesRevenue
+FROM Sales S
+JOIN Product P
+ON S.ProductID = P.ProductID;
+```
+
+**Purpose:** Calculates total sales revenue using product prices and quantities sold.
+
+### 8.2 Display Sales Transaction Details
+
+```sql
+SELECT
+    S.SaleID,
+    C.CustomerName,
+    P.ProductName,
+    P.Category,
+    S.Quantity,
+    P.Price,
+    P.Price * S.Quantity AS TotalAmount,
+    S.SaleDate
+FROM Sales S
+JOIN Customer C
+ON S.CustomerID = C.CustomerID
+JOIN Product P
+ON S.ProductID = P.ProductID
+ORDER BY S.SaleDate;
+```
+
+**Purpose:** Displays complete sales transaction details, including customer, product, quantity, and total amount.
+
+### 8.3 Generate Date-Wise Sales Report
+
+```sql
+SELECT
+    SaleDate,
+    SUM(P.Price * S.Quantity) AS DailySales
+FROM Sales S
+JOIN Product P
+ON S.ProductID = P.ProductID
+GROUP BY SaleDate
+ORDER BY SaleDate;
+```
+
+**Purpose:** Calculates daily sales revenue.
+
+## 9. Find Top Customers Based on Purchase Amount
+
+```sql
+SELECT
+    C.CustomerID,
+    C.CustomerName,
+    SUM(P.Price * S.Quantity) AS TotalPurchaseAmount
+FROM Customer C
+JOIN Sales S
+ON C.CustomerID = S.CustomerID
+JOIN Product P
+ON S.ProductID = P.ProductID
+GROUP BY C.CustomerID, C.CustomerName
+ORDER BY TotalPurchaseAmount DESC
+LIMIT 5;
+```
+
+**Purpose:** Ranks customers according to their total purchase amounts and displays the top five customers.
+
+## 10. Identify Best-Selling Products
+
+### 10.1 Rank Products by Quantity Sold
+
+```sql
+SELECT
+    P.ProductID,
+    P.ProductName,
+    SUM(S.Quantity) AS TotalQuantitySold
+FROM Product P
+JOIN Sales S
+ON P.ProductID = S.ProductID
+GROUP BY P.ProductID, P.ProductName
+ORDER BY TotalQuantitySold DESC;
+```
+
+**Purpose:** Identifies the best-selling products based on the total number of units sold.
+
+### 10.2 Rank Products by Sales Revenue
+
+```sql
+SELECT
+    P.ProductID,
+    P.ProductName,
+    SUM(P.Price * S.Quantity) AS TotalRevenue
+FROM Product P
+JOIN Sales S
+ON P.ProductID = S.ProductID
+GROUP BY P.ProductID, P.ProductName
+ORDER BY TotalRevenue DESC;
+```
+
+**Purpose:** Identifies products that generate the highest sales revenue.
+
+## 11. Perform Category-Wise Sales Analysis
+
+### 11.1 Calculate Total Sales by Category
+
+```sql
+SELECT
+    P.Category,
+    SUM(P.Price * S.Quantity) AS CategorySales
+FROM Product P
+JOIN Sales S
+ON P.ProductID = S.ProductID
+GROUP BY P.Category
+ORDER BY CategorySales DESC;
+```
+
+**Purpose:** Compares sales revenue across product categories.
+
+### 11.2 Calculate Category-Wise Quantity Sold
+
+```sql
+SELECT
+    P.Category,
+    SUM(S.Quantity) AS TotalQuantitySold
+FROM Product P
+JOIN Sales S
+ON P.ProductID = S.ProductID
+GROUP BY P.Category
+ORDER BY TotalQuantitySold DESC;
+```
+
+**Purpose:** Determines which product categories sell the highest number of units.
+
+### 11.3 Calculate Average Sales Amount by Category
+
+```sql
+SELECT
+    P.Category,
+    AVG(P.Price * S.Quantity) AS AverageSalesAmount
+FROM Product P
+JOIN Sales S
+ON P.ProductID = S.ProductID
+GROUP BY P.Category
+ORDER BY AverageSalesAmount DESC;
+```
+
+**Purpose:** Calculates the average transaction value for each product category.
+
+## 12. Generate a Complete Sales Summary
+
+```sql
+SELECT
+    COUNT(*) AS TotalTransactions,
+    SUM(S.Quantity) AS TotalUnitsSold,
+    SUM(P.Price * S.Quantity) AS TotalRevenue,
+    AVG(P.Price * S.Quantity) AS AverageTransactionAmount,
+    MIN(P.Price * S.Quantity) AS MinimumLineItemAmount,
+    MAX(P.Price * S.Quantity) AS MaximumLineItemAmount
+FROM Sales S
+JOIN Product P
+ON S.ProductID = P.ProductID;
+```
+
+**Purpose:** Generates an overall summary of sales performance using all five aggregate functions.
+
+**Note:** The minimum and maximum values in this query represent individual sales line amounts, not complete transaction totals when a transaction can contain multiple products.
+
+## 13. Expected Results
+
+The following results are based on the sample data inserted above.
+
+| Metric                | Expected Result |
+| --------------------- | --------------: |
+| Total Transactions    |              12 |
+| Total Units Sold      |              21 |
+| Total Sales Revenue   |       ₹2,49,000 |
+| Average Product Price |         ₹16,300 |
+| Lowest Product Price  |          ₹1,500 |
+| Highest Product Price |         ₹50,000 |
+
+### Top Customers by Purchase Amount
+
+| Rank | Customer | Purchase Amount |
+| ---- | -------- | --------------: |
+| 1    | Karthik  |       ₹1,16,000 |
+| 2    | Divya    |       ₹1,04,500 |
+| 3    | Arun     |         ₹75,500 |
+| 4    | Priya    |         ₹46,000 |
+| 5    | Rahul    |         ₹26,000 |
+
+### Best-Selling Products by Quantity
+
+| Product      | Quantity Sold |
+| ------------ | ------------: |
+| Headphones   |             5 |
+| Keyboard     |             6 |
+| Laptop       |             4 |
+| Mobile       |             3 |
+| Office Chair |             3 |
+
+## 14. Key Findings
+
+1. The system calculates overall sales revenue and the total number of product units sold.
+2. Customer purchase reports help identify high-value customers.
+3. Product rankings reveal which items sell most frequently and which generate the highest revenue.
+4. Category-wise reports help compare sales performance across Electronics, Accessories, and Furniture.
+
+## 15. Business Recommendations
+
+1. **Customer Retention:** Provide loyalty rewards and personalized offers to customers with high purchase amounts.
+2. **Inventory Management:** Monitor best-selling products and maintain sufficient stock to meet demand.
+3. **Category Optimization:** Use category-wise sales reports to identify successful categories and improve the performance of weaker categories.
+
+## 16. Conclusion
+
+The Sales and Customer Analytics System demonstrates how MySQL aggregate functions and table joins can be used to analyze sales data. It generates total sales reports, identifies top customers, ranks best-selling products, and compares category-wise sales performance. The results can support data-driven business decisions, customer relationship management, and inventory planning.
+
+## 17. Author
+
+**Project:** Sales and Customer Analytics System
+**Task:** IX
+**Database:** SalesAnalyticsDB
+**Technology:** MySQL
