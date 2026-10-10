@@ -1,0 +1,495 @@
+# Task VIII: Database Relationship Analysis Using Joins
+
+## 1. Project Overview
+
+This project demonstrates database relationship analysis using SQL joins in an E-Commerce Database Management System.
+
+The project combines four tables: Customer, Product, Orders, and Payment. It implements INNER JOIN, LEFT JOIN, and RIGHT JOIN to retrieve complete order details, display customer purchase history, and generate multi-table reports.
+
+## 2. Objectives
+
+* Combine Customer, Product, Orders, and Payment tables.
+* Implement INNER JOIN, LEFT JOIN, and RIGHT JOIN.
+* Retrieve complete order details.
+* Display customer purchase history.
+* Generate multi-table reports.
+* Identify orders without payment records.
+* Analyze customer purchases, product sales, and payment methods.
+
+## 3. Technologies Used
+
+* Database: MySQL
+* Language: SQL
+* Platform: MySQL Workbench
+* Version Control: GitHub
+
+## 4. Database Creation
+
+```sql
+CREATE DATABASE ECommerceJoinsDB;
+
+USE ECommerceJoinsDB;
+```
+
+## 5. Create Customer Table
+
+```sql
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    city VARCHAR(50)
+);
+```
+
+### Insert Customer Records
+
+```sql
+INSERT INTO Customer
+(customer_id, customer_name, email, city)
+VALUES
+(1, 'Arun', 'arun@gmail.com', 'Chennai'),
+(2, 'Priya', 'priya@gmail.com', 'Coimbatore'),
+(3, 'Rahul', 'rahul@gmail.com', 'Madurai'),
+(4, 'Divya', 'divya@gmail.com', 'Salem'),
+(5, 'Karthik', 'karthik@gmail.com', 'Chennai');
+```
+
+### Display Customer Records
+
+```sql
+SELECT * FROM Customer;
+```
+
+## 6. Create Product Table
+
+```sql
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    price DECIMAL(10,2)
+);
+```
+
+### Insert Product Records
+
+```sql
+INSERT INTO Product
+(product_id, product_name, category, price)
+VALUES
+(101, 'Laptop', 'Electronics', 55000.00),
+(102, 'Headphones', 'Electronics', 2500.00),
+(103, 'Smartphone', 'Electronics', 20000.00),
+(104, 'Backpack', 'Accessories', 1200.00),
+(105, 'Keyboard', 'Electronics', 1500.00);
+```
+
+### Display Product Records
+
+```sql
+SELECT * FROM Product;
+```
+
+## 7. Create Orders Table
+
+```sql
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    product_id INT,
+    order_date DATE,
+    quantity INT,
+    status VARCHAR(30),
+
+    FOREIGN KEY (customer_id)
+        REFERENCES Customer(customer_id),
+
+    FOREIGN KEY (product_id)
+        REFERENCES Product(product_id)
+);
+```
+
+### Insert Order Records
+
+```sql
+INSERT INTO Orders
+(order_id, customer_id, product_id, order_date, quantity, status)
+VALUES
+(1001, 1, 101, '2026-10-01', 1, 'Delivered'),
+(1002, 2, 102, '2026-10-02', 2, 'Delivered'),
+(1003, 1, 103, '2026-10-03', 1, 'Shipped'),
+(1004, 3, 104, '2026-10-04', 3, 'Delivered'),
+(1005, 4, 102, '2026-10-05', 1, 'Pending');
+```
+
+### Display Order Records
+
+```sql
+SELECT * FROM Orders;
+```
+
+## 8. Create Payment Table
+
+```sql
+CREATE TABLE Payment (
+    payment_id INT PRIMARY KEY,
+    order_id INT,
+    payment_mode VARCHAR(30),
+    payment_date DATE,
+    amount DECIMAL(10,2),
+    payment_status VARCHAR(30),
+
+    FOREIGN KEY (order_id)
+        REFERENCES Orders(order_id)
+);
+```
+
+### Insert Payment Records
+
+```sql
+INSERT INTO Payment
+(payment_id, order_id, payment_mode, payment_date, amount, payment_status)
+VALUES
+(501, 1001, 'UPI', '2026-10-01', 55000.00, 'Successful'),
+(502, 1002, 'Credit Card', '2026-10-02', 5000.00, 'Successful'),
+(503, 1003, 'UPI', '2026-10-03', 20000.00, 'Successful'),
+(504, 1004, 'Cash', '2026-10-04', 3600.00, 'Successful');
+```
+
+### Display Payment Records
+
+```sql
+SELECT * FROM Payment;
+```
+
+## 9. INNER JOIN Implementation
+
+INNER JOIN returns only records with matching values in the joined tables.
+
+### 9.1 Customer and Orders
+
+```sql
+SELECT
+    Customer.customer_name,
+    Orders.order_id,
+    Orders.order_date,
+    Orders.status
+FROM Customer
+INNER JOIN Orders
+    ON Customer.customer_id = Orders.customer_id;
+```
+
+### 9.2 Orders and Products
+
+```sql
+SELECT
+    Orders.order_id,
+    Product.product_name,
+    Product.category,
+    Orders.quantity,
+    Product.price
+FROM Orders
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id;
+```
+
+### 9.3 Combine All Four Tables
+
+```sql
+SELECT
+    Customer.customer_name,
+    Customer.city,
+    Orders.order_id,
+    Orders.order_date,
+    Product.product_name,
+    Product.category,
+    Orders.quantity,
+    Product.price,
+    (Orders.quantity * Product.price) AS subtotal,
+    Payment.payment_mode,
+    Payment.amount,
+    Payment.payment_status
+FROM Customer
+INNER JOIN Orders
+    ON Customer.customer_id = Orders.customer_id
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id
+INNER JOIN Payment
+    ON Orders.order_id = Payment.order_id;
+```
+
+## 10. LEFT JOIN Implementation
+
+LEFT JOIN returns all records from the left table and matching records from the right table. Missing matches are represented by NULL.
+
+### 10.1 Display All Customers and Their Orders
+
+```sql
+SELECT
+    Customer.customer_id,
+    Customer.customer_name,
+    Orders.order_id,
+    Orders.order_date,
+    Orders.status
+FROM Customer
+LEFT JOIN Orders
+    ON Customer.customer_id = Orders.customer_id;
+```
+
+### 10.2 Display All Orders and Payment Details
+
+```sql
+SELECT
+    Orders.order_id,
+    Orders.order_date,
+    Orders.status,
+    Payment.payment_mode,
+    Payment.amount,
+    Payment.payment_status
+FROM Orders
+LEFT JOIN Payment
+    ON Orders.order_id = Payment.order_id;
+```
+
+## 11. RIGHT JOIN Implementation
+
+RIGHT JOIN returns all records from the right table and matching records from the left table.
+
+### 11.1 Display All Products and Their Orders
+
+```sql
+SELECT
+    Orders.order_id,
+    Orders.order_date,
+    Product.product_id,
+    Product.product_name,
+    Product.price
+FROM Orders
+RIGHT JOIN Product
+    ON Orders.product_id = Product.product_id;
+```
+
+### 11.2 Display All Payments and Order Details
+
+```sql
+SELECT
+    Payment.payment_id,
+    Payment.payment_mode,
+    Payment.amount,
+    Payment.payment_status,
+    Orders.order_id,
+    Orders.order_date
+FROM Orders
+RIGHT JOIN Payment
+    ON Orders.order_id = Payment.order_id;
+```
+
+## 12. Retrieve Complete Order Details
+
+This query combines customer, order, product, and payment information.
+
+```sql
+SELECT
+    Orders.order_id,
+    Customer.customer_name,
+    Customer.city,
+    Product.product_name,
+    Product.category,
+    Orders.order_date,
+    Orders.quantity,
+    Product.price,
+    (Orders.quantity * Product.price) AS subtotal,
+    Orders.status AS order_status,
+    Payment.payment_mode,
+    Payment.payment_status
+FROM Orders
+INNER JOIN Customer
+    ON Orders.customer_id = Customer.customer_id
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id
+LEFT JOIN Payment
+    ON Orders.order_id = Payment.order_id
+ORDER BY Orders.order_date;
+```
+
+## 13. Display Customer Purchase History
+
+```sql
+SELECT
+    Customer.customer_id,
+    Customer.customer_name,
+    Orders.order_id,
+    Orders.order_date,
+    Product.product_name,
+    Orders.quantity,
+    Product.price,
+    (Orders.quantity * Product.price) AS total_amount,
+    Orders.status
+FROM Customer
+INNER JOIN Orders
+    ON Customer.customer_id = Orders.customer_id
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id
+ORDER BY Customer.customer_name, Orders.order_date;
+```
+
+### Purchase History of a Specific Customer
+
+```sql
+SELECT
+    Customer.customer_name,
+    Orders.order_id,
+    Orders.order_date,
+    Product.product_name,
+    Orders.quantity,
+    (Orders.quantity * Product.price) AS total_amount
+FROM Customer
+INNER JOIN Orders
+    ON Customer.customer_id = Orders.customer_id
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id
+WHERE Customer.customer_name = 'Arun'
+ORDER BY Orders.order_date;
+```
+
+## 14. Multi-Table Reports
+
+### 14.1 Total Purchase Value for Each Customer
+
+```sql
+SELECT
+    Customer.customer_name,
+    SUM(Orders.quantity * Product.price) AS total_purchase_value
+FROM Customer
+INNER JOIN Orders
+    ON Customer.customer_id = Orders.customer_id
+INNER JOIN Product
+    ON Orders.product_id = Product.product_id
+GROUP BY Customer.customer_id, Customer.customer_name
+ORDER BY total_purchase_value DESC;
+```
+
+### 14.2 Total Sales for Each Product
+
+```sql
+SELECT
+    Product.product_name,
+    SUM(Orders.quantity) AS total_quantity_sold,
+    SUM(Orders.quantity * Product.price) AS total_sales
+FROM Product
+INNER JOIN Orders
+    ON Product.product_id = Orders.product_id
+GROUP BY Product.product_id, Product.product_name
+ORDER BY total_sales DESC;
+```
+
+### 14.3 Analyze Payment Methods
+
+```sql
+SELECT
+    Payment.payment_mode,
+    COUNT(Payment.payment_id) AS total_transactions,
+    SUM(Payment.amount) AS total_payment_amount
+FROM Payment
+WHERE Payment.payment_status = 'Successful'
+GROUP BY Payment.payment_mode
+ORDER BY total_payment_amount DESC;
+```
+
+### 14.4 Find Orders Without Payment Records
+
+```sql
+SELECT
+    Orders.order_id,
+    Customer.customer_name,
+    Orders.order_date,
+    Orders.status
+FROM Orders
+INNER JOIN Customer
+    ON Orders.customer_id = Customer.customer_id
+LEFT JOIN Payment
+    ON Orders.order_id = Payment.order_id
+WHERE Payment.payment_id IS NULL;
+```
+
+### 14.5 Count Orders for Each Customer
+
+```sql
+SELECT
+    Customer.customer_name,
+    COUNT(Orders.order_id) AS total_orders
+FROM Customer
+LEFT JOIN Orders
+    ON Customer.customer_id = Orders.customer_id
+GROUP BY Customer.customer_id, Customer.customer_name
+ORDER BY total_orders DESC;
+```
+
+## 15. Verify All Tables
+
+```sql
+SELECT * FROM Customer;
+
+SELECT * FROM Product;
+
+SELECT * FROM Orders;
+
+SELECT * FROM Payment;
+```
+
+## 16. Database Relationships
+
+The database uses primary keys and foreign keys to connect the four tables.
+
+* `Customer.customer_id` connects Customer with Orders.
+* `Product.product_id` connects Product with Orders.
+* `Orders.order_id` connects Orders with Payment.
+
+### Relationship Diagram
+
+```text
+Customer
+   |
+   | customer_id
+   |
+   v
+Orders -------- Product
+   |
+   | order_id
+   |
+   v
+Payment
+```
+
+## 17. Key Findings
+
+1. INNER JOIN retrieves matching records across related tables.
+2. LEFT JOIN helps identify customers without orders and orders without payment records.
+3. RIGHT JOIN displays all products, including products that have never been ordered.
+4. Customer purchase history helps analyze customer buying behaviour.
+5. Multi-table reports provide information about customer purchases, product sales, and payment methods.
+
+## 18. Real-World Applications
+
+* E-commerce order tracking.
+* Customer purchase history analysis.
+* Product sales reporting.
+* Payment transaction monitoring.
+* Identifying orders that require payment verification.
+* Supporting business decisions using relational database reports.
+
+## 19. Conclusion
+
+This project demonstrates database relationship analysis using INNER JOIN, LEFT JOIN, and RIGHT JOIN in MySQL.
+
+By combining Customer, Product, Orders, and Payment tables, the project retrieves complete order details, displays customer purchase history, and generates multi-table reports.
+
+The project strengthens understanding of relational database design, primary keys, foreign keys, SQL joins, aggregate functions, and practical database analysis.
+
+## 20. Author
+
+**Project:** Database Relationship Analysis Using Joins
+**Task:** Task VIII
+**Database:** MySQL
+**Domain:** E-Commerce Database Management System
